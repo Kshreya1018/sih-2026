@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: medi-locator-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # You'll set this manually in Render dashboard
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: OVERPASS_API_URL
+        value: https://overpass-api.de/api/interpreter
+      - key: DEFAULT_SEARCH_RADIUS
+        value: "5000"
