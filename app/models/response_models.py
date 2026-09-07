@@ -16,7 +16,7 @@ class Facility(BaseModel):
 
 class FindHelpResponse(BaseModel):
     """Response payload containing triage assessment and ranked facilities."""
-    needs: str = Field(..., description="Facility category needed: hospital, doctor, or medical_store")
+    needs: str = Field(..., description="Facility category needed: hospital or doctor")
     specialty: str = Field(..., description="Medical specialty or department recommended")
     urgency: str = Field(..., description="Urgency level: high or normal")
     results: List[Facility] = Field(default_factory=list, description="Ranked list of nearby medical facilities")

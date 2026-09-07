@@ -4,6 +4,9 @@ from app.utils.distance import haversine
 from app.models.response_models import Facility
 
 
+EXCLUDED_FACILITY_TYPES = {"pharmacy", "chemist", "medical_store"}
+
+
 def rank_facilities(
     user_lat: float,
     user_lng: float,
@@ -13,6 +16,7 @@ def rank_facilities(
     """
     Computes distance between user and each facility, sorts ascending by distance,
     and returns the top K facilities mapped to Facility Pydantic models.
+    Filters out any pharmacies or medical stores.
 
     Args:
         user_lat: User's latitude.
@@ -26,6 +30,10 @@ def rank_facilities(
     ranked_list: List[Facility] = []
 
     for fac in facilities:
+        fac_type = str(fac.get("type", "")).lower()
+        if fac_type in EXCLUDED_FACILITY_TYPES:
+            continue
+
         fac_lat = fac["lat"]
         fac_lng = fac["lng"]
         dist_km = haversine(user_lat, user_lng, fac_lat, fac_lng)

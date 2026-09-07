@@ -51,3 +51,19 @@ def test_rank_facilities_fewer_than_top_k():
     assert results[0].address is None
     assert results[0].phone is None
 
+
+def test_rank_facilities_excludes_pharmacies_and_medical_stores():
+    facilities = [
+        {"name": "MedPlus Pharmacy", "type": "pharmacy", "lat": 28.6140, "lng": 77.2091},
+        {"name": "City Medical Store", "type": "medical_store", "lat": 28.6141, "lng": 77.2092},
+        {"name": "Local Chemist", "type": "chemist", "lat": 28.6142, "lng": 77.2093},
+        {"name": "Dr. Verma Clinic", "type": "doctor", "lat": 28.6150, "lng": 77.2100},
+        {"name": "City Hospital", "type": "hospital", "lat": 28.6200, "lng": 77.2150}
+    ]
+    results = rank_facilities(28.6139, 77.2090, facilities, top_k=5)
+    assert len(results) == 2
+    assert results[0].name == "Dr. Verma Clinic"
+    assert results[1].name == "City Hospital"
+    for r in results:
+        assert r.type not in {"pharmacy", "medical_store", "chemist"}
+

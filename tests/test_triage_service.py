@@ -48,7 +48,8 @@ def test_classify_problem_groq_success_medical_store():
     })
     with patch("app.services.triage_service.call_groq_triage", return_value=groq_json):
         res = classify_problem("Bandages and paracetamol")
-        assert res["needs"] == "medical_store"
+        # medical_store must be normalized to doctor
+        assert res["needs"] == "doctor"
         assert res["specialty"] == "Pharmacy"
         assert res["urgency"] == "normal"
 

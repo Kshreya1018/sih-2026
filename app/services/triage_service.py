@@ -36,7 +36,9 @@ def classify_problem(text: str) -> Dict[str, str]:
             raise ValueError("Parsed JSON is not a dictionary.")
 
         needs = str(data.get("needs", "hospital")).strip().lower()
-        if needs not in {"hospital", "doctor", "medical_store"}:
+        if needs == "medical_store":
+            needs = "doctor"
+        elif needs not in {"hospital", "doctor"}:
             needs = "hospital"
 
         specialty = str(data.get("specialty", "General Medicine")).strip()

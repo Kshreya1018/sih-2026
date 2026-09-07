@@ -72,7 +72,7 @@ def get_nearby_facilities(
     around the specified latitude and longitude within the given radius in meters.
 
     Args:
-        needs: Category of need ('hospital', 'doctor', 'medical_store').
+        needs: Category of need ('hospital' or 'doctor').
         lat: Center latitude.
         lng: Center longitude.
         radius: Search radius in meters (default 5000).
@@ -80,6 +80,12 @@ def get_nearby_facilities(
     Returns:
         List of raw or normalized facility dictionaries with at least name, lat, lng.
     """
+    # Normalize needs category - strictly doctor or hospital
+    if needs == "medical_store":
+        needs = "doctor"
+    elif needs not in NEEDS_TO_OSM_TAGS:
+        needs = "hospital"
+
     osm_tags = NEEDS_TO_OSM_TAGS.get(needs, [NEEDS_TO_OSM_TAG.get(needs, "amenity=hospital")])
     query = build_overpass_query(osm_tags, lat, lng, radius)
 
@@ -92,9 +98,15 @@ def get_nearby_facilities(
 
     facilities: List[Dict[str, Any]] = []
     elements = data.get("elements", [])
+    excluded_types = {"pharmacy", "chemist", "medical_store"}
 
     for element in elements:
         tags = element.get("tags", {})
+
+        amenity_val = (tags.get("amenity") or "").lower()
+        healthcare_val = (tags.get("healthcare") or "").lower()
+        if amenity_val in excluded_types or healthcare_val in excluded_types:
+            continue
 
         # Determine coordinates (nodes have lat/lon, ways have center lat/lon)
         fac_lat: Optional[float] = element.get("lat")
@@ -109,13 +121,16 @@ def get_nearby_facilities(
         if fac_lat is None or fac_lng is None:
             continue
 
+        facility_type = tags.get("amenity") or tags.get("healthcare") or needs
+        if str(facility_type).lower() in excluded_types:
+            continue
+
         name = (
             tags.get("name")
             or tags.get("name:en")
             or tags.get("operator")
             or f"Unnamed {needs.replace('_', ' ').title()}"
         )
-        facility_type = tags.get("amenity") or tags.get("healthcare") or needs
         phone = tags.get("phone") or tags.get("contact:phone")
         address = extract_address(tags)
 

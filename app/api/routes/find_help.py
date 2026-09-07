@@ -36,6 +36,11 @@ async def find_help(request: FindHelpRequest) -> FindHelpResponse:
         # Step 3: Triage classification
         triage = classify_problem(request.text)
         needs = triage.get("needs", "hospital")
+        if needs == "medical_store":
+            needs = "doctor"
+        elif needs not in {"hospital", "doctor"}:
+            needs = "hospital"
+
         specialty = triage.get("specialty", "General Medicine")
         urgency = triage.get("urgency", "normal")
 

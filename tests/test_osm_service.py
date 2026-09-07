@@ -7,7 +7,8 @@ from app.services.osm_service import build_overpass_query, extract_address, get_
 def test_osm_tag_mappings():
     assert NEEDS_TO_OSM_TAG["hospital"] == "amenity=hospital"
     assert NEEDS_TO_OSM_TAG["doctor"] == "amenity=doctors"
-    assert NEEDS_TO_OSM_TAG["medical_store"] == "amenity=pharmacy"
+    assert "medical_store" not in NEEDS_TO_OSM_TAG
+    assert "medical_store" not in NEEDS_TO_OSM_TAGS
 
 
 def test_build_overpass_query_single_tag():
@@ -140,4 +141,35 @@ def test_get_nearby_facilities_empty_or_failure(mock_query):
     # Malformed response dict without elements key
     mock_query.return_value = {"error": "rate limit"}
     assert get_nearby_facilities("medical_store", 28.6139, 77.2090) == []
+
+
+@patch("app.services.osm_service.query_overpass")
+def test_get_nearby_facilities_excludes_pharmacy(mock_query):
+    mock_query.return_value = {
+        "elements": [
+            {
+                "type": "node",
+                "id": 1,
+                "lat": 28.6200,
+                "lon": 77.2100,
+                "tags": {
+                    "name": "Apollo Pharmacy",
+                    "amenity": "pharmacy"
+                }
+            },
+            {
+                "type": "node",
+                "id": 2,
+                "lat": 28.6250,
+                "lon": 77.2150,
+                "tags": {
+                    "name": "Dr. Sharma Clinic",
+                    "amenity": "doctors"
+                }
+            }
+        ]
+    }
+    facilities = get_nearby_facilities("doctor", 28.6139, 77.2090)
+    assert len(facilities) == 1
+    assert facilities[0]["name"] == "Dr. Sharma Clinic"
 

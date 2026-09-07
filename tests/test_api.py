@@ -125,9 +125,10 @@ def test_find_help_red_flag_safety_override(mock_classify, mock_get_facilities):
 @patch("app.api.routes.find_help.get_nearby_facilities")
 @patch("app.api.routes.find_help.classify_problem")
 def test_find_help_no_facilities_found(mock_classify, mock_get_facilities):
+    # Even if an external classification says medical_store, it must map to doctor
     mock_classify.return_value = {
         "needs": "medical_store",
-        "specialty": "Pharmacy",
+        "specialty": "General Medicine",
         "urgency": "normal"
     }
     mock_get_facilities.return_value = []
@@ -141,7 +142,7 @@ def test_find_help_no_facilities_found(mock_classify, mock_get_facilities):
     assert response.status_code == 200
 
     data = response.json()
-    assert data["needs"] == "medical_store"
+    assert data["needs"] == "doctor"
     assert data["results"] == []
 
 

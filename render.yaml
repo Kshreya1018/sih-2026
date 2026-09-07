@@ -9,7 +9,7 @@ services:
       - key: GROQ_API_KEY
         sync: false          # You'll set this manually in Render dashboard
       - key: GROQ_MODEL
-        value: llama-3.3-70b-versatile
+        value: groq/compound
       - key: OVERPASS_API_URL
         value: https://overpass-api.de/api/interpreter
       - key: DEFAULT_SEARCH_RADIUS
